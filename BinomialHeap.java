@@ -11,6 +11,13 @@ public class BinomialHeap
     public HeapNode last;
     public HeapNode min;
 
+    public BinomialHeap(int size, int numTrees, HeapNode last, HeapNode min) {
+        this.size = size;
+        this.numTrees = numTrees;
+        this.last = last;
+        this.min = min;
+    }
+    public BinomialHeap(){}
     /**
      *
      * pre: key > 0
@@ -20,7 +27,12 @@ public class BinomialHeap
      */
     public HeapItem insert(int key, String info)
     {
-        return null; // should be replaced by student code
+        HeapNode new_node = new HeapNode();
+        HeapItem new_heap = new HeapItem(new_node, info, key);
+        new_heap.node.item = new_heap;
+        new_heap.node.rank = 0;
+        this.meld(new BinomialHeap(1, 1, new_node, new_node));
+        return new_heap;
     }
 
     /**
@@ -52,7 +64,20 @@ public class BinomialHeap
      */
     public void decreaseKey(HeapItem item, int diff)
     {
-        return; // should be replaced by student code
+        item.key -= diff;
+        int k = 1;
+        while (item.node.parent != null)
+        {
+            if (k == 1)
+            {
+                k = fix_child_parent_relationship(item.node);
+            }
+            else
+            {
+                break;
+            }
+        }
+        return;
     }
 
     /**
@@ -63,6 +88,24 @@ public class BinomialHeap
     public void delete(HeapItem item)
     {
         return; // should be replaced by student code
+    }
+
+    public int fix_child_parent_relationship(HeapNode node)
+    {
+        if (node.item.key < node.parent.item.key)
+        {
+            int k = node.item.key;
+            String h = node.item.info;
+            node.item.key = node.parent.item.key;
+            node.parent.item.key = k;
+            node.item.info = node.parent.item.info;
+            node.parent.item.info = h;
+            return 1;
+        }
+        else
+        {
+            return -1;
+        }
     }
 
     /**
@@ -220,6 +263,13 @@ public class BinomialHeap
         public HeapNode node;
         public int key;
         public String info;
+
+        public HeapItem(HeapNode new_node, String info, int key) {
+            this.info = info;
+            this.node = new_node;
+            this.key = key;
+        }
+        public HeapItem(){}
     }
 
 }
