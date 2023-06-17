@@ -1,7 +1,7 @@
 public class test {
     public static void printHeap(BinomialHeap heap){
         System.out.println("size: " + heap.size);
-        System.out.println("num of trees: " + heap.numTrees);
+        System.out.println("num of trees: " + heap.numTrees());
         if (heap.empty())
             return;
         System.out.println("Min: " + itemToString(heap.min.item));
@@ -49,21 +49,30 @@ public class test {
                 node = node.next;
                 offset += printTree(node, toPrint, offsetX+offset, offsetY+1);
             }while (node != tree.child);
+            return offset;
         }
         return 1;
     }
     public static String itemToString(BinomialHeap.HeapItem item){
         return "<" + item.key + ", " + item.info + ">";
     }
+
     public static void main(String[] args){
         BinomialHeap heap = new BinomialHeap();
-        for(int i = 1; i < 10; i++){
-            String str = "";
-            for (int j = 0; j < i; j++){
-                str = str + "a";
-            }
-            heap.insert(i, str);
-        }
+        for(int i = 1; i < 16; i++)
+            heap.insert(2*i, "");
         printHeap(heap);
+        heap.deleteMin();
+        printHeap(heap);
+        BinomialHeap.HeapNode del = heap.last.child;
+        heap.delete(del.item);
+        BinomialHeap.HeapNode inc = heap.last.child.child.child;
+        printHeap(heap);
+        heap.decreaseKey(inc.item, 25);
+        printHeap(heap);
+        while (!heap.empty()){
+            heap.deleteMin();
+            printHeap(heap);
+        }
     }
 }
