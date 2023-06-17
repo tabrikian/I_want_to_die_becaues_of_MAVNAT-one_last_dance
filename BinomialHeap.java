@@ -1,299 +1,78 @@
-/**
- * BinomialHeap
- *
- * An implementation of binomial heap over non-negative integers.
- * Based on exercise from previous semester.
- */
-public class BinomialHeap
-{
-    public int size;
-    public int numTrees;
-    public HeapNode last;
-    public HeapNode min;
+public class test {
+    public static void printHeap(BinomialHeap heap){
+        System.out.println("size: " + heap.size);
+        System.out.println("num of trees: " + heap.numTrees());
+        if (heap.empty())
+            return;
+        System.out.println("Min: " + itemToString(heap.min.item));
+        System.out.println("Last.rank: " +heap.last.rank);
+        System.out.println("Last: " +itemToString(heap.last.item));
+        System.out.println();
+        System.out.println();
 
-    public BinomialHeap(int size, int numTrees, HeapNode last, HeapNode min) {
-        this.size = size;
-        this.numTrees = numTrees;
-        this.last = last;
-        this.min = min;
-    }
-    public BinomialHeap(){}
-    public BinomialHeap(HeapNode firstNode) {
-        HeapNode node = firstNode;
-        this.last = firstNode;
-        this.min = firstNode;
-        do {
-            this.size += (int) Math.pow(2, node.rank);
-            this.numTrees++;
-            this.last = this.last.rank > node.rank? this.last:node;
-            this.min = this.min.item.key < node.item.key ?this.min:node;
-            node.parent = null;
-            node = node.next;
-        }while (node != firstNode);
-    }
-    /**
-     *
-     * pre: key > 0
-     *
-     * Insert (key,info) into the heap and return the newly generated HeapItem.
-     *
-     */
-    public HeapItem insert(int key, String info) {
-        HeapItem item = new HeapItem(key, info);
-        HeapNode node = item.node;
-        BinomialHeap toAdd = new BinomialHeap(node);
-        this.meld(toAdd);
-        return item;
-    }
-
-    /**
-     *
-     * Delete the minimal item
-     *
-     */
-    public void deleteMin() {
-        // make new heap from min's root
-        BinomialHeap heap2 = new BinomialHeap(this.min.child);
-        // remove min and his children
-        HeapNode newMin = null;
-        HeapNode newLast = null;
-        this.numTrees--;
-        this.size -= (int) Math.pow(2, this.min.rank);
-        HeapNode node = this.min;
-        while (node.next != this.min){
-            node = node.next;
-            newMin = newMin == null || newMin.item.key > node.item.key? node: newMin;
-            newLast = newLast == null || newLast.rank < node.rank? node: newLast;
-        }
-        node.next = node.next.next;
-        this.min = newMin;
-        this.last = newLast;
-        // merge the heaps
-        this.meld(heap2);
-    }
-
-    /**
-     *
-     * Return the minimal HeapItem
-     *
-     */
-    public HeapItem findMin()
-    {
-        return this.min.item;
-    }
-
-    /**
-     *
-     * pre: 0<diff<item.key
-     *
-     * Decrease the key of item by diff and fix the heap.
-     *
-     */
-    public void decreaseKey(HeapItem item, int diff)
-    {
-        item.key -= diff;
-        HeapNode node = item.node;
-        while (node.parent != null && item.key < node.parent.item.key)
-            shiftUp(node);
-    }
-
-    /**
-     *
-     * Delete the item from the heap.
-     *
-     */
-    public void delete(HeapItem item) {
-        int diff = item.key;
-        this.decreaseKey(item, diff);
-        this.deleteMin();
-    }
-
-    public void shiftUp(HeapNode node)
-    {
-        HeapNode parent = node.parent;
-        HeapItem temp = node.item;
-        node.item = parent.item;
-        parent.item = temp;
-        node.item.node = node;
-        parent.item.node = parent;
-    }
-
-    /**
-     *
-     * Meld the heap with heap2
-     *
-     */
-    public void meld(BinomialHeap heap2) {
-        /* if one of the heaps is empty, set this heap to the second */
-        if (heap2.last == null){return;}
-        else if (this.last == null) {
-            this.last = heap2.last;
-            this.min = heap2.min;
-            this.size = heap2.size;
-            this.numTrees = heap2.numTrees;
-        }
-        else{
-            int t = 0;
-            int s = this.size + heap2.size;
-            HeapNode m = this.min.item.key < heap2.min.item.key? this.min: heap2.min;
-            HeapNode dummy = new HeapNode();
-            HeapNode newNode = dummy;
-            HeapNode carry = null;
-            HeapNode add1;
-            HeapNode add2;
-            int stoppingTime = Math.max(this.last.rank, heap2.last.rank)+1;
-            for(int i = 0; i <= stoppingTime; i++){
-                if (this.last != null && this.last.next.rank == i){
-                    add1 = this.last.next;
-                    if (this.last.next != this.last)
-                        this.last.next = this.last.next.next;
-                    else
-                        this.last = null;
-                    add1.next = add1;
-                }
-                else
-                    add1 = null;
-
-                if (heap2.last != null && heap2.last.next.rank == i){
-                    add2 = heap2.last.next;
-                    if (heap2.last.next != heap2.last)
-                        heap2.last.next = heap2.last.next.next;
-                    else
-                        heap2.last = null;
-                    add2.next = add2;
-                }
-                else
-                    add2 = null;
-                HeapNode [] updateTree = merge3Trees(add1, add2, carry);
-                carry = updateTree[1];
-                HeapNode toAdd = updateTree[0];
-                if(toAdd != null) {
-                    toAdd.next = dummy;
-                    newNode.next = toAdd;
-                    newNode = newNode.next;
-                    t++;
-                }
+        String[][] toPrint = new String[heap.last.rank+1][(int) Math.pow(2, heap.last.rank)];
+        for (int i = 0; i < toPrint.length; i++){
+            for (int j = 0; j < toPrint[0].length; j++){
+                toPrint[i][j] = "";
             }
-            newNode.next = dummy.next;
-            this.last = newNode;
-            this.size = s;
-            this.numTrees = t;
-            this.min = m;
         }
+        int offset = 0;
+        BinomialHeap.HeapNode node = heap.last;
+        do {
+            node = node.next;
+            offset += printTree(node, toPrint, offset, 0);
+        }while (node != heap.last);
+
+        int[] lens = new int[toPrint[0].length];
+        for(int i = 0; i < lens.length; i++){
+            for (String[] strings : toPrint) {
+                lens[i] = Math.max(lens[i], strings[i].length());
+            }
+        }
+        for (String[] strings : toPrint) {
+            for (int j = 0; j < toPrint[0].length; j++) {
+                System.out.print(strings[j]);
+                for (int k = 0; k < lens[j] - strings[j].length() + 3; k++)
+                    System.out.print(' ');
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println();
     }
-    public HeapNode[] merge3Trees(HeapNode tree1, HeapNode tree2, HeapNode tree3){
-        HeapNode[] result = new HeapNode[2];
-        // reorder the trees
-        if (tree3 == null){
-            tree3 = tree1;
-            tree1 = null;
+    public static int printTree(BinomialHeap.HeapNode tree, String[][] toPrint, int offsetX, int offsetY){
+        toPrint[offsetY][offsetX] = itemToString(tree.item);
+        if(tree.child != null){
+            int offset = 0;
+            BinomialHeap.HeapNode node = tree.child;
+            do {
+                node = node.next;
+                offset += printTree(node, toPrint, offsetX+offset, offsetY+1);
+            }while (node != tree.child);
+            return offset;
         }
-        if (tree2 == null){
-            tree2 = tree1;
-            tree1 = null;
-        }
-        if (tree3 == null){
-            tree3 = tree2;
-            tree2 = null;
-        }
-        // if 2 trees are null, the carry mast be empty and the result will be the third
-        if (tree1 == null && tree2 == null){
-            result[0] = tree3;
-            result[1] = null;
-        }
-        else{
-            // if 2 trees are not null, the carry mast be merging of them and the result will be the third
-            result[0] = tree1;
-            result[1] = merge2Trees(tree2, tree3);;
-        }
-        return result;
+        return 1;
     }
-    public HeapNode merge2Trees(HeapNode tree1, HeapNode tree2){
-        // make sure tree1 contain the minimum value in the tree
-        if (tree1.item.key > tree2.item.key){
-            HeapNode temp = tree1;
-            tree1 = tree2;
-            tree2 = temp;
-        }
-        // set tree2 as child in tree1 (the child with the biggest rank)
-        if (tree1.child == null){
-            tree2.parent = tree1;
-            tree2.next = tree2;
-            tree1.child = tree2;
-            tree1.rank++;
-        }
-        else {
-            tree2.parent = tree1;
-            tree2.next = tree1.child.next;
-            tree1.child.next = tree2;
-            tree1.child = tree2;
-            tree1.rank++;
-        }
-        return tree1;
-    }
-    /**
-     *
-     * Return the number of elements in the heap
-     *
-     */
-    public int size(){
-        return this.size; // should be replaced by student code
+    public static String itemToString(BinomialHeap.HeapItem item){
+        return "<" + item.key + ", " + item.info + ">";
     }
 
-    /**
-     *
-     * The method returns true if and only if the heap
-     * is empty.
-     *
-     */
-    public boolean empty(){
-        return this.size == 0; // should be replaced by student code
-    }
-
-    /**
-     *
-     * Return the number of trees in the heap.
-     *
-     */
-    public int numTrees() {
-        return this.numTrees; // should be replaced by student code
-    }
-
-    /**
-     * Class implementing a node in a Binomial Heap.
-     *
-     */
-    public class HeapNode{
-        public HeapItem item;
-        public HeapNode child;
-        public HeapNode next;
-        public HeapNode parent;
-        public int rank;
-
-        public HeapNode(){}
-        public HeapNode(HeapItem item){
-            this.item = item;
-            this.next = this;
-            this.child = null;
-            this.parent = null;
-            this.rank = 0;
-        }
-    }
-
-    /**
-     * Class implementing an item in a Binomial Heap.
-     *
-     */
-    public class HeapItem{
-        public HeapNode node;
-        public int key;
-        public String info;
-
-        public HeapItem(){}
-        public HeapItem(int key, String info) {
-            this.key = key;
-            this.info = info;
-            this.node = new HeapNode(this);
+    public static void main(String[] args){
+        BinomialHeap heap = new BinomialHeap();
+        for(int i = 1; i < 16; i++)
+            heap.insert(2*i, "");
+        printHeap(heap);
+        heap.deleteMin();
+        printHeap(heap);
+        BinomialHeap.HeapNode del = heap.last.child;
+        heap.delete(del.item);
+        BinomialHeap.HeapNode inc = heap.last.child.child.child;
+        printHeap(heap);
+        heap.decreaseKey(inc.item, 25);
+        printHeap(heap);
+        while (!heap.empty()){
+            heap.deleteMin();
+            printHeap(heap);
         }
     }
 }
