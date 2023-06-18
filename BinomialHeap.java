@@ -291,13 +291,4 @@ public class BinomialHeap
             this.node = new HeapNode(this);
         }
     }
-    public static String nodeToString(BinomialHeap.HeapNode node){
-        if(node == null)
-            return null;
-        HeapItem item = node.item;
-        return "<" + item.key + ", " + item.info + ">" + " rank: " + node.rank;
-    }
-    public static String itemToString(BinomialHeap.HeapItem item){
-        return "<" + item.key + ", " + item.info + ">";
-    }
 }
