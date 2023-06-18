@@ -135,48 +135,44 @@ public class BinomialHeap
             int t = 0;
             int s = this.size + heap2.size;
             HeapNode m = this.min.item.key < heap2.min.item.key? this.min: heap2.min;
-            HeapNode dummy = new HeapNode();
-            HeapNode newNode = dummy;
             HeapNode carry = null;
-            HeapNode add1;
-            HeapNode add2;
-            int stoppingTime = Math.max(this.last.rank, heap2.last.rank)+1;
-            for(int i = 0; i <= stoppingTime; i++){
-                if (this.last != null && this.last.next.rank == i){
-                    add1 = this.last.next;
-                    if (this.last.next != this.last)
-                        this.last.next = this.last.next.next;
-                    else
-                        this.last = null;
-                    add1.next = add1;
-                }
-                else
-                    add1 = null;
+            HeapNode dummy = new HeapNode();
+            dummy.next = this.last.next;
+            this.last.next = dummy;
+            HeapNode curr = dummy;
 
-                if (heap2.last != null && heap2.last.next.rank == i){
+            for(int i = 0; !(heap2.last == null && carry == null); i++) {
+                HeapNode add1 = null;
+                HeapNode add2 = null;
+                if (curr.next.rank == i) {
+                    add1 = curr.next;
+                    curr.next = curr.next.next;
+                    add1.next = add1;
+                    t--;
+                }
+                if (heap2.last != null && heap2.last.next.rank == i) {
                     add2 = heap2.last.next;
-                    if (heap2.last.next != heap2.last)
-                        heap2.last.next = heap2.last.next.next;
-                    else
+                    if (heap2.last.next == heap2.last)
                         heap2.last = null;
+                    else
+                        heap2.last.next = heap2.last.next.next;
                     add2.next = add2;
                 }
-                else
-                    add2 = null;
-                HeapNode [] updateTree = merge3Trees(add1, add2, carry);
-                carry = updateTree[1];
-                HeapNode toAdd = updateTree[0];
-                if(toAdd != null) {
-                    toAdd.next = dummy;
-                    newNode.next = toAdd;
-                    newNode = newNode.next;
+
+                HeapNode[] result = merge3Trees(add1, add2, carry);
+                carry = result[1];
+                HeapNode toAdd = result[0];
+                if(toAdd != null){
+                    toAdd.next = curr.next;
+                    curr.next = toAdd;
+                    curr = curr.next;
                     t++;
                 }
             }
-            newNode.next = dummy.next;
-            this.last = newNode;
+            this.last = curr.rank > this.last.rank? curr: this.last;
+            this.last.next = this.last.next.next;
             this.size = s;
-            this.numTrees = t;
+            this.numTrees += t;
             this.min = m;
         }
     }
@@ -294,5 +290,14 @@ public class BinomialHeap
             this.info = info;
             this.node = new HeapNode(this);
         }
+    }
+    public static String nodeToString(BinomialHeap.HeapNode node){
+        if(node == null)
+            return null;
+        HeapItem item = node.item;
+        return "<" + item.key + ", " + item.info + ">" + " rank: " + node.rank;
+    }
+    public static String itemToString(BinomialHeap.HeapItem item){
+        return "<" + item.key + ", " + item.info + ">";
     }
 }
