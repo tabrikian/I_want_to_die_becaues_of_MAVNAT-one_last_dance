@@ -11,25 +11,38 @@ public class BinomialHeap
     public HeapNode last;
     public HeapNode min;
 
+    /* Constructor to make new BinomialHeap with specified values*/
     public BinomialHeap(int size, int numTrees, HeapNode last, HeapNode min) {
         this.size = size;
         this.numTrees = numTrees;
         this.last = last;
         this.min = min;
     }
+    /* Empty Constructor*/
     public BinomialHeap(){}
+    /* Constructor that receives a HeapNode, and makes a new Binomial Heap from him, his siblings and their descendents*/
     public BinomialHeap(HeapNode firstNode) {
-        HeapNode node = firstNode;
+        HeapNode Current_node = firstNode;
         this.last = firstNode;
         this.min = firstNode;
         do {
-            this.size += (int) Math.pow(2, node.rank);
+            /*update size and numTrees of new BinomialHeap*/
+            this.size += (int) Math.pow(2, Current_node.rank);
             this.numTrees++;
-            this.last = this.last.rank > node.rank? this.last:node;
-            this.min = this.min.item.key < node.item.key ?this.min:node;
-            node.parent = null;
-            node = node.next;
-        }while (node != firstNode);
+            /*Separate from parent Node*/
+            Current_node.parent = null;
+            /*update last and min fields if necessary*/
+            if (this.last.rank <= Current_node.rank)
+            {
+                this.last = Current_node;
+            }
+            if (this.min.item.key >= Current_node.item.key)
+            {
+                this.min = Current_node;
+            }
+            /*continue to next iteration*/
+            Current_node = Current_node.next;
+        }while (Current_node != firstNode);
     }
     /**
      *
@@ -39,10 +52,14 @@ public class BinomialHeap
      *
      */
     public HeapItem insert(int key, String info) {
+        /* Create new item and node with the key and info*/
         HeapItem item = new HeapItem(key, info);
         HeapNode node = item.node;
+        /* Create a BinomialHeap of size 1 with the item and node*/
         BinomialHeap toAdd = new BinomialHeap(node);
+        /*use the meld function to add the new Heap of size one to General BinomialHeap*/
         this.meld(toAdd);
+        /* Return the new HeapItem*/
         return item;
     }
 
@@ -52,23 +69,32 @@ public class BinomialHeap
      *
      */
     public void deleteMin() {
-        // make new heap from min's root
+        // make new heap from min's descendents
         BinomialHeap heap2 = this.min.child == null? new BinomialHeap(): new BinomialHeap(this.min.child);
-        // remove min and his children
+        // find new Min and Last
         HeapNode newMin = null;
         HeapNode newLast = null;
-        this.numTrees--;
-        this.size -= (int) Math.pow(2, this.min.rank);
         HeapNode node = this.min;
         while (node.next != this.min){
             node = node.next;
-            newMin = newMin == null || newMin.item.key > node.item.key? node: newMin;
-            newLast = newLast == null || newLast.rank < node.rank? node: newLast;
+            if (newMin == null || newMin.item.key > node.item.key)
+            {
+                newMin = node;
+            }
+            if (newLast == null || newLast.rank < node.rank )
+            {
+                newLast = node;
+            }
         }
+        // remove min and his descendents from the Heap
         node.next = node.next.next;
+        // update size and numTrees
+        this.numTrees--;
+        this.size -= (int) Math.pow(2, this.min.rank);
+        // update min and last fields
         this.min = newMin;
         this.last = newLast;
-        // merge the heaps
+        // merge the heap of the min's descendents back to the original heap
         this.meld(heap2);
     }
 
@@ -79,6 +105,7 @@ public class BinomialHeap
      */
     public HeapItem findMin()
     {
+        /* The BinomialHeap saves a min field, so we return it's item field*/
         return this.min.item;
     }
 
@@ -91,7 +118,9 @@ public class BinomialHeap
      */
     public void decreaseKey(HeapItem item, int diff)
     {
+        /* update key value*/
         item.key -= diff;
+        /* bubble up the node in loop with shiftUp method to fix heap property*/
         while (item.node.parent != null && item.key < item.node.parent.item.key)
             shiftUp(item.node);
     }
@@ -102,17 +131,20 @@ public class BinomialHeap
      *
      */
     public void delete(HeapItem item) {
-        int diff = item.key;
-        this.decreaseKey(item, diff);
+        /* Decrease key to 0 to ensure it is the minimum and delete the minimum*/
+        this.decreaseKey(item, item.key);
         this.deleteMin();
     }
 
     public void shiftUp(HeapNode node)
     {
+        /*create temp pointers*/
         HeapNode parent = node.parent;
         HeapItem temp = node.item;
+        /* switch between the items*/
         node.item = parent.item;
         parent.item = temp;
+        /* switch between the corresponding nodes*/
         node.item.node = node;
         parent.item.node = parent;
     }
@@ -123,15 +155,9 @@ public class BinomialHeap
      *
      */
     public void meld(BinomialHeap heap2) {
-        /* if one of the heaps is empty, set this heap to the second */
-        if (heap2.last == null){return;}
-        else if (this.last == null) {
-            this.last = heap2.last;
-            this.min = heap2.min;
-            this.size = heap2.size;
-            this.numTrees = heap2.numTrees;
-        }
-        else{
+        /* if both trees aren't empty*/
+        if( !this.empty() && !heap2.empty())
+        {
             int t = 0;
             int s = this.size + heap2.size;
             HeapNode m = this.min.item.key < heap2.min.item.key? this.min: heap2.min;
@@ -174,6 +200,13 @@ public class BinomialHeap
             this.size = s;
             this.numTrees += t;
             this.min = m;
+        }
+        /* if one of the heaps is empty, set "this" as the non-empty one */
+        if (this.empty() && !heap2.empty()) {
+            this.last = heap2.last;
+            this.min = heap2.min;
+            this.size = heap2.size;
+            this.numTrees = heap2.numTrees;
         }
     }
     public HeapNode[] merge3Trees(HeapNode tree1, HeapNode tree2, HeapNode tree3){
@@ -232,7 +265,8 @@ public class BinomialHeap
      *
      */
     public int size(){
-        return this.size; // should be replaced by student code
+        /* we save the number of elements in the size field, so we return the value in it*/
+        return this.size;
     }
 
     /**
@@ -242,7 +276,8 @@ public class BinomialHeap
      *
      */
     public boolean empty(){
-        return this.size == 0; // should be replaced by student code
+        /* a heap is empty if and only if it's size is zero, so we return the boolean value "this.size == 0"*/
+        return this.size == 0;
     }
 
     /**
@@ -251,7 +286,8 @@ public class BinomialHeap
      *
      */
     public int numTrees() {
-        return this.numTrees; // should be replaced by student code
+        /* We save the number of heaps in the tree in the numTrees field */
+        return this.numTrees;
     }
 
     /**
@@ -265,8 +301,10 @@ public class BinomialHeap
         public HeapNode parent;
         public int rank;
 
+        /* empty constructor*/
         public HeapNode(){}
         public HeapNode(HeapItem item){
+            /* constructor from item*/
             this.item = item;
             this.next = this;
             this.child = null;
@@ -284,8 +322,10 @@ public class BinomialHeap
         public int key;
         public String info;
 
+        /*empty constructor*/
         public HeapItem(){}
         public HeapItem(int key, String info) {
+            /* Constructor with variables*/
             this.key = key;
             this.info = info;
             this.node = new HeapNode(this);
