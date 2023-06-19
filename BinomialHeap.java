@@ -36,7 +36,7 @@ public class BinomialHeap
             {
                 this.last = Current_node;
             }
-            if (this.min.item.key >= Current_node.item.key)
+            if (this.min.item.key > Current_node.item.key)
             {
                 this.min = Current_node;
             }
@@ -121,7 +121,7 @@ public class BinomialHeap
         /* update key value*/
         item.key -= diff;
         /* bubble up the node in loop with shiftUp method to fix heap property*/
-        while (item.node.parent != null && item.key < item.node.parent.item.key)
+        while (item.node.parent != null && item.key <= item.node.parent.item.key)
             shiftUp(item.node);
         /* Update min field */
         this.min = this.min.item.key < item.key ? this.min : item.node;
