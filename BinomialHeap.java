@@ -123,6 +123,8 @@ public class BinomialHeap
         /* bubble up the node in loop with shiftUp method to fix heap property*/
         while (item.node.parent != null && item.key < item.node.parent.item.key)
             shiftUp(item.node);
+        /* Update min field */
+        this.min = this.min.item.key < item.key ? this.min : item.node;
     }
 
     /**
@@ -131,8 +133,8 @@ public class BinomialHeap
      *
      */
     public void delete(HeapItem item) {
-        /* Decrease key to 0 to ensure it is the minimum and delete the minimum*/
-        this.decreaseKey(item, item.key);
+        /* Decrease key to -1 to ensure it is the minimum and delete the minimum*/
+        this.decreaseKey(item, item.key + 1);
         this.deleteMin();
     }
 
