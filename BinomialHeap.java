@@ -52,11 +52,10 @@ public class BinomialHeap
      *
      */
     public HeapItem insert(int key, String info) {
-        /* Create new item and node with the key and info*/
+        /* Create new item (and node) with the key and info*/
         HeapItem item = new HeapItem(key, info);
-        HeapNode node = item.node;
-        /* Create a BinomialHeap of size 1 with the item and node*/
-        BinomialHeap toAdd = new BinomialHeap(node);
+        /* Create a BinomialHeap of size 1 from the item and node*/
+        BinomialHeap toAdd = new BinomialHeap(item.node);
         /*use the meld function to add the new Heap of size one to General BinomialHeap*/
         this.meld(toAdd);
         /* Return the new HeapItem*/
@@ -160,24 +159,29 @@ public class BinomialHeap
         /* if both trees aren't empty*/
         if( !this.empty() && !heap2.empty())
         {
-            int t = 0;
-            int s = this.size + heap2.size;
-            HeapNode m = this.min.item.key < heap2.min.item.key? this.min: heap2.min;
+            /* initialize temporary variables*/
+            int numTreesCounter = 0;
+            int combinedSize = this.size + heap2.size;
+            /* minNode has the minimal key between the two trees*/
+            HeapNode minNode = this.min.item.key < heap2.min.item.key ? this.min : heap2.min;
             HeapNode carry = null;
             HeapNode dummy = new HeapNode();
+            /* add the "dummy" to the chain of siblings*/
             dummy.next = this.last.next;
             this.last.next = dummy;
             HeapNode curr = dummy;
-
+            /* like in a full adder, we iterate over every possible rank size*/
             for(int i = 0; !(heap2.last == null && carry == null); i++) {
                 HeapNode add1 = null;
                 HeapNode add2 = null;
+                /* check for every i, if tree of rank i exists in the first heap*/
                 if (curr.next.rank == i) {
                     add1 = curr.next;
                     curr.next = curr.next.next;
                     add1.next = add1;
-                    t--;
+                    numTreesCounter--;
                 }
+                /* check for every i, if tree of rank i exists in the second heap*/
                 if (heap2.last != null && heap2.last.next.rank == i) {
                     add2 = heap2.last.next;
                     if (heap2.last.next == heap2.last)
@@ -186,22 +190,27 @@ public class BinomialHeap
                         heap2.last.next = heap2.last.next.next;
                     add2.next = add2;
                 }
-
+                /* combine the 3 (or less) trees*/
                 HeapNode[] result = merge3Trees(add1, add2, carry);
                 carry = result[1];
                 HeapNode toAdd = result[0];
+                /* add the result of the summation to the Heap*/
                 if(toAdd != null){
                     toAdd.next = curr.next;
                     curr.next = toAdd;
                     curr = curr.next;
-                    t++;
+                    numTreesCounter++;
                 }
             }
-            this.last = curr.rank > this.last.rank? curr: this.last;
+            /* after we finished merging, update Class fields*/
+            if (curr.rank > this.last.rank)
+            {
+                this.last = curr;
+            }
             this.last.next = this.last.next.next;
-            this.size = s;
-            this.numTrees += t;
-            this.min = m;
+            this.size = combinedSize;
+            this.numTrees += numTreesCounter;
+            this.min = minNode;
         }
         /* if one of the heaps is empty, set "this" as the non-empty one */
         if (this.empty() && !heap2.empty()) {
@@ -212,8 +221,10 @@ public class BinomialHeap
         }
     }
     public HeapNode[] merge3Trees(HeapNode tree1, HeapNode tree2, HeapNode tree3){
+        /* the implementation is like a binary full adder*/
+        /* result[0] is the addition result, result[1] is the carry*/
         HeapNode[] result = new HeapNode[2];
-        // reorder the trees
+        /* we first reorder the trees so the null trees are first in the ordering*/
         if (tree3 == null){
             tree3 = tree1;
             tree1 = null;
@@ -226,39 +237,40 @@ public class BinomialHeap
             tree3 = tree2;
             tree2 = null;
         }
-        // if 2 trees are null, the carry mast be empty and the result will be the third
+        /* if at least two trees are null, the carry will be empty and the addition result will be the third tree*/
         if (tree1 == null && tree2 == null){
             result[0] = tree3;
             result[1] = null;
         }
+        /* Otherwise, the carry will be the merging of the two trees that are definitely not null */
+        /* and the result of the addition will be the third tree*/
         else{
-            // if 2 trees are not null, the carry mast be merging of them and the result will be the third
+            /* call merge2Trees to combine two trees of the same size*/
             result[0] = tree1;
             result[1] = merge2Trees(tree2, tree3);;
         }
+        /* return the "add" and the "carry"*/
         return result;
     }
     public HeapNode merge2Trees(HeapNode tree1, HeapNode tree2){
-        // make sure tree1 contain the minimum value in the tree
+        /* Make sure that tree1 contains the minimum value in the tree*/
         if (tree1.item.key > tree2.item.key){
             HeapNode temp = tree1;
             tree1 = tree2;
             tree2 = temp;
         }
-        // set tree2 as child in tree1 (the child with the biggest rank)
+        /* Set tree2 as a child of tree1 (the child with the biggest rank) */
+        tree2.parent = tree1;
         if (tree1.child == null){
-            tree2.parent = tree1;
             tree2.next = tree2;
-            tree1.child = tree2;
-            tree1.rank++;
         }
         else {
-            tree2.parent = tree1;
             tree2.next = tree1.child.next;
             tree1.child.next = tree2;
-            tree1.child = tree2;
-            tree1.rank++;
         }
+        tree1.child = tree2;
+        tree1.rank++;
+        /* return the combined tree */
         return tree1;
     }
     /**
