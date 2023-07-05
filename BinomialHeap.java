@@ -163,7 +163,7 @@ public class BinomialHeap
             int numTreesCounter = 0;
             int combinedSize = this.size + heap2.size;
             /* minNode has the minimal key between the two trees*/
-            HeapNode minNode = this.min.item.key < heap2.min.item.key ? this.min : heap2.min;
+            this.min = this.min.item.key < heap2.min.item.key ? this.min : heap2.min;
             HeapNode carry = null;
             HeapNode dummy = new HeapNode();
             /* add the "dummy" to the chain of siblings*/
@@ -210,7 +210,7 @@ public class BinomialHeap
             this.last.next = this.last.next.next;
             this.size = combinedSize;
             this.numTrees += numTreesCounter;
-            this.min = minNode;
+            return;
         }
         /* if one of the heaps is empty, set "this" as the non-empty one */
         if (this.empty() && !heap2.empty()) {
@@ -254,7 +254,7 @@ public class BinomialHeap
     }
     public HeapNode merge2Trees(HeapNode tree1, HeapNode tree2){
         /* Make sure that tree1 contains the minimum value in the tree*/
-        if (tree1.item.key > tree2.item.key){
+        if (tree1.item.key > tree2.item.key || tree2 == this.min){
             HeapNode temp = tree1;
             tree1 = tree2;
             tree2 = temp;
